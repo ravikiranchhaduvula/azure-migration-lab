@@ -12,19 +12,23 @@ permissions:
   contents: read
 
 jobs:
-
   terraform-plan:
-
     name: Terraform Plan
 
     runs-on: ubuntu-latest
+
+    env:
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      ARM_USE_OIDC: true
+      TF_LOG: DEBUG
 
     defaults:
       run:
         working-directory: terraform
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -41,6 +45,12 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Terraform Version
+        run: terraform version
+
+      - name: Azure Account
+        run: az account show
+
       - name: Terraform Format Check
         run: terraform fmt -check
 
@@ -48,7 +58,7 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: terraform plan -out=tfplan -input=false
 
       - name: Upload Terraform Plan
         uses: actions/upload-artifact@v4
@@ -57,7 +67,6 @@ jobs:
           path: terraform/tfplan
 
   terraform-apply:
-
     name: Terraform Apply
 
     needs: terraform-plan
@@ -67,12 +76,18 @@ jobs:
     environment:
       name: production
 
+    env:
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      ARM_USE_OIDC: true
+      TF_LOG: INFO
+
     defaults:
       run:
         working-directory: terraform
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -88,6 +103,12 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+
+      - name: Terraform Version
+        run: terraform version
+
+      - name: Azure Account
+        run: az account show
 
       - name: Download Terraform Plan
         uses: actions/download-artifact@v4

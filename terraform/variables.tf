@@ -1,5 +1,3 @@
-variable "subscription_id" {}
-
 variable "location" {
   default = "Australia East"
 }
