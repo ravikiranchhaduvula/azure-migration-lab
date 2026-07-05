@@ -1,0 +1,12 @@
+terraform/resource-group.tf
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Variable files with secrets
+*.auto.tfvars
+terraform.tfvars
+
+# Crash logs
+crash.log
