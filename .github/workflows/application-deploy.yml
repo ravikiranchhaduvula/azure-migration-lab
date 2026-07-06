@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'app/**'
+      - '.github/workflows/application-deploy.yml'
 
   workflow_dispatch:
 
@@ -19,7 +22,9 @@ jobs:
 
     env:
       ACR_NAME: raviacrterraform26
-      IMAGE_NAME: azure-migration-app
+      IMAGE_NAME: azure-migration-lab
+      WEBAPP_NAME: ravi-nginx-demo-tf2026
+      RESOURCE_GROUP: migration-lab-rg-tf
 
     steps:
       - name: Checkout Repository
@@ -35,3 +40,22 @@ jobs:
       - name: Login to Azure Container Registry
         run: |
           az acr login --name $ACR_NAME
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            -t $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }} \
+            -t $ACR_NAME.azurecr.io/$IMAGE_NAME:latest \
+            ./app
+
+      - name: Push Docker Image
+        run: |
+          docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }}
+          docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:latest
+
+      - name: Deploy to Azure App Service
+        run: |
+          az webapp config container set \
+            --name $WEBAPP_NAME \
+            --resource-group $RESOURCE_GROUP \
+            --container-image-name $ACR_NAME.azurecr.io/$IMAGE_NAME:latest
