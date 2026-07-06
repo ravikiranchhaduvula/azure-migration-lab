@@ -20,6 +20,5 @@ resource "azurerm_linux_web_app" "webapp" {
   }
 
   site_config {
-    acr_use_managed_identity_credentials = true
   }
 }
