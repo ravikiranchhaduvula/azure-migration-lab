@@ -20,6 +20,6 @@ resource "azurerm_linux_web_app" "webapp" {
   }
 
   site_config {
-    # We'll configure the container settings here
+    acr_use_managed_identity_credentials = true
   }
 }
